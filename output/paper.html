@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.13" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="dcterms.date" content="2026-11-09" />
+  <title>POGO: An R-Based Software Workflow for Automated Leg Stiffness Estimation from C3D Biomechanical Data</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      color: light-dark(#1a1a1a, #fdfdfd);
+      background-color: #fdfdfd;
+      background-color: light-dark(#fdfdfd, #1a1a1a);
+      color-scheme: light dark;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        color-scheme: light only;
+      }
+      html, body, pre, code {
+        background-color: transparent;
+      }
+      body, a, a:visited, blockquote {
+        color: black;
+      }
+      pre, code {
+        padding: 0;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a, a:visited {
+      color: inherit;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid;
+      border-color: #e6e6e6;
+      border-color: light-dark(#e6e6e6, #4c4c4c);
+      color: #606060;
+      color: light-dark(#606060, #b6b6b6);
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid currentColor;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid currentColor;
+      border-bottom: 1px solid currentColor;
+    }
+    th {
+      border-top: 1px solid currentColor;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+    /* CSS for citations */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+    }
+    .hanging-indent div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">POGO: An R-Based Software Workflow for Automated Leg
+Stiffness Estimation from C3D Biomechanical Data</h1>
+<p class="date">9 November 2026</p>
+</header>
+<h1 id="summary">Summary</h1>
+<p>This work presents POGO, an R-based automated workflow for leg
+stiffness estimation from synchronized motion-capture and force-platform
+data stored in C3D files. The workflow reduces the need for manual C3D
+file processing and biomechanical event identification.</p>
+<p>The workflow enables automated C3D data processing, including data
+extraction, stance-phase detection, biomechanical event identification,
+force–displacement parameter extraction, leg stiffness calculation, and
+result export. The software supports batch processing of running and
+countermovement jump (CMJ) landing biomechanics datasets and is designed
+to improve the efficiency and reproducibility of leg stiffness
+analysis.</p>
+<p>The workflow was developed for running and CMJ landing studies using
+three-dimensional motion-capture and force-platform measurements.
+Demonstrations using running and CMJ landing datasets show how repeated
+trials can be processed and standardized leg stiffness outputs
+generated.</p>
+<h1 id="statement-of-need">Statement of need</h1>
+<p>Leg stiffness is an important biomechanical parameter for
+characterizing lower-limb mechanical behavior during running and CMJ
+landing. It reflects the ability of the lower-extremity system to resist
+deformation under external loading and is commonly estimated using
+spring–mass models <span class="citation"
+data-cites="mcmahon1990">(McMahon and Cheng 1990)</span>.</p>
+<p>Traditional leg stiffness estimation relies on synchronized
+motion-capture and force-platform data. The calculation requires
+identification of task-specific biomechanical events and extraction of
+the corresponding force and leg-compression variables during stance
+<span class="citation" data-cites="farley1996">(Farley and González
+1996)</span>. Different calculation approaches may also influence
+stiffness estimates depending on the selected kinetic and kinematic
+variables <span class="citation" data-cites="coleman2012">(Coleman et
+al. 2012)</span>.</p>
+<p>However, conventional processing workflows often require manual C3D
+file inspection, event identification, and parameter extraction. These
+procedures become time-consuming when processing datasets with multiple
+participants and repeated trials.</p>
+<p>POGO integrates C3D data processing, biomechanical event detection,
+leg stiffness calculation, and standardized result export. It is
+intended for biomechanics researchers who work with synchronized C3D
+motion-capture and force-platform recordings and need to process
+repeated running or CMJ landing trials.</p>
+<h1 id="state-of-the-field">State of the field</h1>
+<p>Several software platforms are available for processing biomechanical
+data from motion-capture and force-platform systems, including
+commercial and open-source tools for kinematic and kinetic analysis.
+These platforms provide flexible data-processing capabilities; however,
+leg stiffness estimation may still require researchers to develop
+task-specific workflows for event identification and variable
+extraction.</p>
+<p>Existing studies have proposed different approaches to calculate leg
+stiffness during running and other movement tasks, but these methods are
+often implemented through customized scripts or manual processing
+procedures <span class="citation"
+data-cites="coleman2012 liew2017">(Coleman et al. 2012; Liew et al.
+2017)</span>. Such approaches may limit reproducibility and increase the
+workload associated with large biomechanical datasets.</p>
+<p>The R package <code>c3dr</code> provides functionality for reading
+and writing C3D motion-capture files <span class="citation"
+data-cites="nolte2026">(Nolte 2026)</span>. POGO builds on C3D file
+access by integrating force-based contact detection, task-specific event
+identification, force–displacement parameter extraction, and leg
+stiffness calculation. It is therefore intended to complement C3D
+data-reading tools by providing a workflow for subsequent leg stiffness
+analysis.</p>
+<!-- AUTHOR CHECK: If you have evaluated specific commercial or open-source biomechanics packages, name them here and cite their software papers or repositories. Do not claim that no comparable software exists without checking. -->
+<h1 id="software-design">Software design</h1>
+<p>POGO was developed in R to automate leg stiffness estimation from
+synchronized three-dimensional motion-capture and force-platform data.
+The workflow integrates C3D file processing, kinematic and kinetic data
+extraction, biomechanical event detection, force–displacement parameter
+extraction, leg stiffness calculation, and standardized result export
+within a unified framework (see ). C3D files are imported and parsed in
+R, allowing synchronized marker trajectories and ground reaction force
+(GRF) data to be extracted for subsequent analysis <span
+class="citation" data-cites="nolte2026">(Nolte 2026)</span>.</p>
+<p>The workflow uses a shared data-import and force-based
+event-detection stage, followed by task-specific event identification.
+Force samples are mapped to marker frames using the sampling-rate
+relationship. Stance or contact is identified using a predefined
+vertical GRF threshold. Separate event criteria are then applied for
+running and CMJ landing, allowing the event definition to reflect the
+movement task rather than imposing one event rule on both tasks. This
+design reuses the common C3D import and synchronization steps while
+keeping event rules explicit for each task; extending the workflow to
+another movement task would require defining and validating an
+additional event-detection rule.</p>
+<!-- AUTHOR CHECK: State the numerical force_threshold and its units. Confirm whether the same threshold is used for running and CMJ landing. -->
+<p>For running, the lowest vertical position of the right greater
+trochanter marker is described as the maximum-compression event. The
+corresponding vertical GRF and marker displacement from initial contact
+are then used to calculate leg stiffness according to the
+force–displacement relationship in <span class="citation"
+data-cites="coleman2012 farley1996 mcmahon1990">(Coleman et al. 2012;
+Farley and González 1996; McMahon and Cheng 1990)</span>.</p>
+<!-- AUTHOR CHECK: Code 2 currently selects which.max(abs(z_contact - z_onset)). Confirm whether the intended event is the lowest vertical marker position or the greatest absolute displacement from contact onset, and make the prose and code consistent. -->
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>K</mi><mrow><mi mathvariant="normal">l</mi><mi mathvariant="normal">e</mi><mi mathvariant="normal">g</mi></mrow></msub><mo>=</mo><mfrac><msub><mi>F</mi><mi mathvariant="normal">max</mi></msub><mrow><mi mathvariant="normal">Δ</mi><mi>L</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">K_{\mathrm{leg}} = \frac{F_{\max}}{\Delta L} \label{eq:leg-stiffness}</annotation></semantics></math></p>
+<p>Here,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>F</mi><mi mathvariant="normal">max</mi></msub><annotation encoding="application/x-tex">F_{\max}</annotation></semantics></math>
+represents the vertical GRF corresponding to the selected event, and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Δ</mi><mi>L</mi></mrow><annotation encoding="application/x-tex">\Delta L</annotation></semantics></math>
+represents the corresponding marker displacement. The workflow outputs
+standardized CSV files containing detected event frames, force values,
+displacement values, stiffness estimates, and processing status,
+enabling batch analysis of repeated biomechanical trials.</p>
+<!-- AUTHOR CHECK: Code 2 and Code 3 output signed z_displacement values. Confirm whether the stiffness calculation uses the absolute displacement or a direction-corrected value, and define this convention in the text. -->
+<figure>
+<img src="figures/media/image1.png" style="width:80.0%"
+alt="Workflow of the automated leg stiffness analysis framework. The workflow includes C3D import, kinematic and kinetic data extraction, stance-phase detection, key-event detection, force and displacement extraction, and leg stiffness calculation and result export." />
+<figcaption aria-hidden="true">Workflow of the automated leg stiffness
+analysis framework. The workflow includes C3D import, kinematic and
+kinetic data extraction, stance-phase detection, key-event detection,
+force and displacement extraction, and leg stiffness calculation and
+result export.</figcaption>
+</figure>
+<h2 id="using-the-software">Using the software</h2>
+<p>POGO provides a unified workflow for automated leg stiffness analysis
+across different movement tasks. To demonstrate its application, two
+previously collected biomechanical datasets comprising running and CMJ
+landing trials were processed. A common processing framework was applied
+to both datasets, while task-specific criteria were used to identify the
+biomechanical events required for the calculation of leg stiffness.</p>
+<h2
+id="illustrative-application-running-and-cmj-data-processing">Illustrative
+application: Running and CMJ data processing</h2>
+<p>Two previously collected biomechanical datasets, comprising running
+and CMJ landing trials, were used to demonstrate the workflow <span
+class="citation" data-cites="wan2026 wang2026">(Wan et al. 2026; Wang et
+al. 2026)</span>. C3D files were processed using the common automated
+framework shown in Code 1. Task-specific biomechanical events were then
+identified for each movement (see ).</p>
+<p><strong>Code 1. Common force-based event detection</strong></p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># POGO: C3D data extraction</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> <span class="fu">pogo_read_c3d</span>(c3d_file)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>marker_data <span class="ot">&lt;-</span> c3dr<span class="sc">::</span><span class="fu">c3d_data</span>(d, <span class="at">format =</span> <span class="st">&quot;wide&quot;</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>fp <span class="ot">&lt;-</span> d<span class="sc">$</span>forceplatform[[forceplate_index]]</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>force_matrix <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(fp<span class="sc">$</span>forces)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>force_raw <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(force_matrix[, <span class="dv">3</span>])</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>force_abs <span class="ot">&lt;-</span> <span class="fu">abs</span>(force_raw)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="co"># POGO: Common force-based event detection</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>peak_force_index <span class="ot">&lt;-</span> <span class="fu">which.max</span>(</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ifelse</span>(<span class="fu">is.finite</span>(force_abs), force_abs, <span class="sc">-</span><span class="cn">Inf</span>)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>force_present <span class="ot">&lt;-</span> <span class="fu">is.finite</span>(force_abs) <span class="sc">&amp;</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  force_abs <span class="sc">&gt;</span> force_threshold</span></code></pre></div>
+<h3 id="running">Running</h3>
+<p>For running, the stance phase is identified from the vertical GRF
+signal. The lowest vertical position of the right greater trochanter
+marker is defined as the maximum-compression event. The corresponding
+force and marker displacement are extracted for leg stiffness
+calculation (Code 2).</p>
+<p><strong>Code 2. Running: Maximum-compression event
+detection</strong></p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># POGO: Running maximum compression event detection</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>onset_force_index <span class="ot">&lt;-</span> peak_force_index</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="cf">while</span> (onset_force_index <span class="sc">&gt;</span> <span class="dv">1</span><span class="dt">L</span> <span class="sc">&amp;&amp;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>       <span class="fu">isTRUE</span>(force_present[onset_force_index <span class="sc">-</span> <span class="dv">1</span><span class="dt">L</span>])) {</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  onset_force_index <span class="ot">&lt;-</span> onset_force_index <span class="sc">-</span> <span class="dv">1</span><span class="dt">L</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>offset_force_index <span class="ot">&lt;-</span> peak_force_index</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="cf">while</span> (offset_force_index <span class="sc">&lt;</span> <span class="fu">length</span>(force_present) <span class="sc">&amp;&amp;</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>       <span class="fu">isTRUE</span>(force_present[offset_force_index <span class="sc">+</span> <span class="dv">1</span><span class="dt">L</span>])) {</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  offset_force_index <span class="ot">&lt;-</span> offset_force_index <span class="sc">+</span> <span class="dv">1</span><span class="dt">L</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>onset_row <span class="ot">&lt;-</span> <span class="fu">.pogo_force_to_marker_row</span>(</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  onset_force_index, analog_per_frame, n_marker_frames</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>offset_row <span class="ot">&lt;-</span> <span class="fu">.pogo_force_to_marker_row</span>(</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>  offset_force_index, analog_per_frame, n_marker_frames</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>z_col <span class="ot">&lt;-</span> marker_cols[[<span class="dv">3</span>]]</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>z_onset <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(marker_data[[z_col]][onset_row])</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>contact_rows <span class="ot">&lt;-</span> <span class="fu">seq.int</span>(onset_row, offset_row)</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>z_contact <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(marker_data[[z_col]][contact_rows])</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>displacement <span class="ot">&lt;-</span> z_contact <span class="sc">-</span> z_onset</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>abs_displacement <span class="ot">&lt;-</span> <span class="fu">abs</span>(displacement)</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>abs_displacement[<span class="sc">!</span><span class="fu">is.finite</span>(abs_displacement)] <span class="ot">&lt;-</span> <span class="sc">-</span><span class="cn">Inf</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>local_index <span class="ot">&lt;-</span> <span class="fu">which.max</span>(abs_displacement)</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>compression_row <span class="ot">&lt;-</span> contact_rows[[local_index]]</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>z_compression <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(marker_data[[z_col]][compression_row])</span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>z_displacement <span class="ot">&lt;-</span> z_compression <span class="sc">-</span> z_onset</span></code></pre></div>
+<h3 id="cmj-landing">CMJ landing</h3>
+<p>For CMJ landing, the contact phase is identified from the force
+signal. Peak vertical GRF is used as the reference event, and the
+corresponding right greater trochanter displacement is extracted from
+the synchronized kinematic data (Code 3).</p>
+<p><strong>Code 3. CMJ: Peak-force-associated displacement
+detection</strong></p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># POGO: CMJ peak-force-associated displacement detection</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>onset_force_index <span class="ot">&lt;-</span> peak_force_index</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="cf">while</span> (onset_force_index <span class="sc">&gt;</span> <span class="dv">1</span><span class="dt">L</span> <span class="sc">&amp;&amp;</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>       <span class="fu">isTRUE</span>(force_present[onset_force_index <span class="sc">-</span> <span class="dv">1</span><span class="dt">L</span>])) {</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  onset_force_index <span class="ot">&lt;-</span> onset_force_index <span class="sc">-</span> <span class="dv">1</span><span class="dt">L</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>onset_row <span class="ot">&lt;-</span> <span class="fu">.pogo_force_to_marker_row</span>(</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  onset_force_index, analog_per_frame, n_marker_frames</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>peak_row <span class="ot">&lt;-</span> <span class="fu">.pogo_force_to_marker_row</span>(</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  peak_force_index, analog_per_frame, n_marker_frames</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>z_col <span class="ot">&lt;-</span> marker_cols[[<span class="dv">3</span>]]</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>z_onset <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(marker_data[[z_col]][onset_row])</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>compression_row <span class="ot">&lt;-</span> peak_row</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>z_compression <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(marker_data[[z_col]][compression_row])</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>z_displacement <span class="ot">&lt;-</span> z_compression <span class="sc">-</span> z_onset</span></code></pre></div>
+<p>The workflow generates standardized trial-level outputs for both
+tasks, including event frames, force values, displacement values, and
+leg stiffness estimates. These outputs are available for subsequent
+statistical analysis.</p>
+<figure>
+<img src="figures/media/image2.png" style="width:80.0%"
+alt="Representative biomechanical data acquisition and task-specific event identification for running and CMJ landing." />
+<figcaption aria-hidden="true">Representative biomechanical data
+acquisition and task-specific event identification for running and CMJ
+landing.</figcaption>
+</figure>
+<h1 id="research-impact-statement">Research impact statement</h1>
+<p>The workflow provides a practical and reproducible approach for
+quantifying leg stiffness from synchronized motion-capture and
+force-platform data. By automating biomechanical event detection and the
+extraction of force and displacement variables, the software reduces the
+need for time-consuming manual processing and facilitates the analysis
+of biomechanical data.</p>
+<p>The workflow incorporates task-specific event-detection procedures
+for running and CMJ landing, allowing leg stiffness to be calculated
+using event definitions appropriate for each movement task. Its
+batch-processing capability supports the analysis of multiple trials
+across these tasks, providing a consistent approach to leg stiffness
+assessment in biomechanical research.</p>
+<!-- AUTHOR CHECK: JOSS asks for specific evidence of impact or credible near-term significance. Add verifiable evidence if available (e.g., the number of trials processed, a public release, automated tests, benchmark results, external users, or publications that actually used POGO). Do not state that the cited Wang/Wan papers used POGO unless they did. -->
+<h1 id="ai-usage-disclosure">AI usage disclosure</h1>
+<p>ChatGPT (OpenAI; GPT-6) was used to assist with manuscript
+formatting, conversion to Markdown, and language editing. The authors
+reviewed and verified the AI-assisted text and technical descriptions
+against the original manuscript and the POGO software
+implementation.</p>
+<!-- AUTHOR CHECK: Confirm that the verification statement is true before submission. Disclose any additional AI use in software development or documentation, if applicable. The original manuscript states that AI tools were not used during software development. -->
+<h1 id="acknowledgements">Acknowledgements</h1>
+<p>This work was supported by the National Natural Science Foundation of
+China (12202216 and 12672425) and the “Mechanics+” Interdisciplinary Top
+Innovative Youth Fund Project of Ningbo University (GC2024006).</p>
+<h1 id="references">References</h1>
+<!-- TODO before submission: add a BibTeX entry for the public POGO software repository and cite it in the paper. The repository URL has not been provided in the source manuscript. -->
+<div id="refs" class="references csl-bib-body hanging-indent"
+role="list">
+<div id="ref-coleman2012" class="csl-entry" role="listitem">
+Coleman, D. R., D. Cannavan, S. Horne, and A. J. Blazevich. 2012.
+<span>“Leg Stiffness in Human Running: Comparison of Estimates Derived
+from Previously Published Models to Direct Kinematic-Kinetic
+Measures.”</span> <em>Journal of Biomechanics</em> 45 (11): 1987–91. <a
+href="https://doi.org/10.1016/j.jbiomech.2012.05.010">https://doi.org/10.1016/j.jbiomech.2012.05.010</a>.
+</div>
+<div id="ref-farley1996" class="csl-entry" role="listitem">
+Farley, C. T., and O. González. 1996. <span>“Leg Stiffness and Stride
+Frequency in Human Running.”</span> <em>Journal of Biomechanics</em> 29
+(2): 181–86. <a
+href="https://doi.org/10.1016/0021-9290(95)00029-1">https://doi.org/10.1016/0021-9290(95)00029-1</a>.
+</div>
+<div id="ref-liew2017" class="csl-entry" role="listitem">
+Liew, B. X. W., S. Morris, A. Masters, and K. Netto. 2017. <span>“A
+Comparison and Update of Direct Kinematic-Kinetic Models of Leg
+Stiffness in Human Running.”</span> <em>Journal of Biomechanics</em> 64:
+253–57. <a
+href="https://doi.org/10.1016/j.jbiomech.2017.09.028">https://doi.org/10.1016/j.jbiomech.2017.09.028</a>.
+</div>
+<div id="ref-mcmahon1990" class="csl-entry" role="listitem">
+McMahon, T. A., and G. C. Cheng. 1990. <span>“The Mechanics of Running:
+How Does Stiffness Couple with Speed?”</span> <em>Journal of
+Biomechanics</em> 23 (Supplement 1): 65–78. <a
+href="https://doi.org/10.1016/0021-9290(90)90042-2">https://doi.org/10.1016/0021-9290(90)90042-2</a>.
+</div>
+<div id="ref-nolte2026" class="csl-entry" role="listitem">
+Nolte, S. 2026. <span>“C3dr: An r Package to Read and Write C3D Motion
+Capture Files.”</span> <em>Journal of Open Source Software</em> 11
+(118): 9951. <a
+href="https://doi.org/10.21105/joss.09951">https://doi.org/10.21105/joss.09951</a>.
+</div>
+<div id="ref-wan2026" class="csl-entry" role="listitem">
+Wan, K., J. Wang, Y. Huang, et al. 2026. <span>“Biomechanical Analysis
+of Countermovement Jump Performance before and after Long-Distance Run
+with Arch Support Footwear.”</span> <em>BMC Sports Science, Medicine and
+Rehabilitation</em> 18: 497. <a
+href="https://doi.org/10.1186/s13102-026-01877-5">https://doi.org/10.1186/s13102-026-01877-5</a>.
+</div>
+<div id="ref-wang2026" class="csl-entry" role="listitem">
+Wang, Y., M. Sun, X. Yang, et al. 2026. <span>“Modulation of Lower Limb
+Joint Stiffness during a Half-Marathon in Male Runners with Varying
+Degrees of Arch Support.”</span> <em>Journal of Biomechanics</em>,
+113435. <a
+href="https://doi.org/10.1016/j.jbiomech.2026.113435">https://doi.org/10.1016/j.jbiomech.2026.113435</a>.
+</div>
+</div>
+</body>
+</html>
